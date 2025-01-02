@@ -219,15 +219,28 @@ def get_square_products(client, open_time, close_time):
 
     return square_products
 
+def get_dates_from_date_file():
+    with open("dates.txt", "r") as file:
+        open_date_string = file.readline().strip()
+        close_date_string = file.readline().strip()
+        try:
+            open_date = datetime.strptime(open_date_string, "%Y-%m-%d")
+            close_date = datetime.strptime(close_date_string, "%Y-%m-%d")
+            return open_date, close_date
+        except ValueError as e:
+            print("ERROR: format the dates in YYYY-MM-DD format in each row")
+            return None, None
+
 if __name__ == "__main__":
 
     # accessing the square API requires calling this function
     client = get_client()
 
-    # from opening on this date 
-    open_date = datetime(2024, 12, 22, 0, 0)
-    # to closing on this date 
-    close_date = datetime(2024, 12, 29, 0, 0)
+    open_date, close_date = get_dates_from_date_file() 
+
+    if not open_date or not close_date:
+        exit(0) 
+
 
     # now ready for using for getting inventory changes 
     open_time, close_time = get_open_close_time(open_date, close_date)
