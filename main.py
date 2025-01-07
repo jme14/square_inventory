@@ -63,6 +63,7 @@ class SquareProduct:
     def __init__(self, catalog_object_id, inventory_adjustment):
         self.catalog_object_id = catalog_object_id
         self.inventory_adjustment = inventory_adjustment
+        self.category_object = {}
         self.catalog_object = {} 
         self.parent_catalog_object = {}
         self.inventory_count = {}
@@ -71,8 +72,9 @@ class SquareProduct:
         try:
             item_name = self.parent_catalog_object["item_data"]["name"]
             item_variation = self.catalog_object["item_variation_data"]["name"] 
-            inventory_quantity = self.inventory_count["quantity"] 
-            return f"\"{item_name}\",\"{item_variation}\",,,{inventory_quantity},"
+            inventory_quantity = self.inventory_count["quantity"]
+            category_name = self.get_category_name()
+            return f"\"{category_name}\",\"{item_name}\",\"{item_variation}\",,,{inventory_quantity},"
         except KeyError:
             return f""
 
@@ -110,7 +112,15 @@ class SquareProduct:
             print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n")
             return ""
         return parent_catalog_obj["item_data"]["reporting_category"]["id"]
-    
+
+    def get_category_name(self):
+        category_object = self.category_object
+        print(category_object)
+        try:
+            return category_object["category_data"]["name"]
+        except KeyError:
+            return "ERROR"
+
     def get_item_id(self):
         try:
             return self.catalog_object["item_variation_data"]["item_id"]
@@ -268,6 +278,22 @@ def get_square_products(client, open_time, close_time):
             if inventory_count["catalog_object_id"] == square_product.catalog_object_id:
                 square_product.inventory_count = inventory_count 
 
+
+    print("Getting category objects...")
+    
+    # this will be a set of all the category ids of this run
+    processed_categories = {}
+    # for all square products... 
+    for square_product in square_products:
+        # get the category id...
+        category_id = square_product.get_category_id()
+        # if it hasn't been processed, look for it 
+        if category_id not in processed_categories.keys():
+            square_product.category_object = get_catalog_objects_from_ids(client, [category_id])[0]
+            processed_categories[category_id] = square_product.category_object
+        # otherwise, just get it 
+        else:
+            square_product.category_object = processed_categories[category_id]
     return square_products
 
 def get_dates_from_date_file():
@@ -310,7 +336,7 @@ if __name__ == "__main__":
     pretty_close_date = close_date.strftime("%Y-%m-%d")
 
     with open(f"prior_records/{pretty_open_date}{pretty_close_date}.csv", "w") as file:
-        file.write("Title,Variation,Floor,Backstock,Square,Notes,Done?\n")
+        file.write("Category,Title,Variation,Floor,Backstock,Square,Notes,Done?\n")
         [file.write(f"{uis}\n") for uis in unique_inventory_strings]
 
 
