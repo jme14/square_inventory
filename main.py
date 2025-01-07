@@ -53,7 +53,10 @@ def category_needs_restock(category_id):
         GAMING_ACCESSORIES,
         MINIATURES_AND_MINIS_SYSTEMS,
         POKEMON_TCG,
-        LIVING_CARD_GAMES
+        LIVING_CARD_GAMES,
+        GRAB_AND_GO,
+        BOTTLED_ALCOHOL,
+        BOTTLED_NON_ALCOHOLIC
     ]
     if category_id in needs_restock:
         return True
