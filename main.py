@@ -115,7 +115,6 @@ class SquareProduct:
 
     def get_category_name(self):
         category_object = self.category_object
-        print(category_object)
         try:
             return category_object["category_data"]["name"]
         except KeyError:
@@ -210,7 +209,7 @@ def get_catalog_objects_from_ids(client, catalog_object_id_array):
     if not catalog_objects_returned.is_success:
         return []
 
-    return [catalog_object for catalog_object in catalog_objects_returned.body["objects"]] 
+    return [catalog_object for catalog_object in catalog_objects_returned.body.get("objects", [])] 
 
 def get_inventory_counts(client, catalog_object_id_array):
     result = client.inventory.batch_retrieve_inventory_counts(
@@ -289,8 +288,11 @@ def get_square_products(client, open_time, close_time):
         category_id = square_product.get_category_id()
         # if it hasn't been processed, look for it 
         if category_id not in processed_categories.keys():
-            square_product.category_object = get_catalog_objects_from_ids(client, [category_id])[0]
-            processed_categories[category_id] = square_product.category_object
+            try:
+                square_product.category_object = get_catalog_objects_from_ids(client, [category_id])[0]
+                processed_categories[category_id] = square_product.category_object
+            except IndexError:
+                square_product.category_object = {}
         # otherwise, just get it 
         else:
             square_product.category_object = processed_categories[category_id]
