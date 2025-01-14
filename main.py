@@ -46,7 +46,6 @@ UPCOMING_EVENTS="BLOWEEZJ5WISQGSVRLQEJCPM"
 
 def category_needs_restock(category_id):
     needs_restock = [
-        GAMES,
         ROLE_PLAYING_GAMES,
         DICE,
         PUZZLES,
@@ -54,9 +53,10 @@ def category_needs_restock(category_id):
         MINIATURES_AND_MINIS_SYSTEMS,
         POKEMON_TCG,
         LIVING_CARD_GAMES,
+        # BOTTLED_ALCOHOL,
+        # BOTTLED_NON_ALCOHOLIC,
         GRAB_AND_GO,
-        BOTTLED_ALCOHOL,
-        BOTTLED_NON_ALCOHOLIC
+        GAMES
     ]
     if category_id in needs_restock:
         return True
@@ -161,7 +161,7 @@ def get_inventory_changes(client, open_time, close_time):
     )
 
     if result.is_error():
-        print("An error occurred")
+        print("An error occurred getting inventory items...")
         print(json.dumps(result, indent=4))
         exit
 
@@ -194,6 +194,18 @@ def get_catalog_objects_from_ids(client, catalog_object_id_array):
         if not isinstance(coi, str):
             print("THIS ONE:")
             print(coi)
+    # attempting to fix the too many items error
+    if len(catalog_object_id_array) > 1000:
+        coi_chunks = []
+        for i in range(0, len(catalog_object_id_array), 1000):
+            coi_chunks.append(catalog_object_id_array[i:i+1000])
+        print(f"Many objects...splitting into {len(coi_chunks)} sections")
+        all_objects = []
+        #print(coi_chunks)
+        for chunk in coi_chunks:
+            all_objects.append(get_catalog_objects_from_ids(client, chunk))
+        return [item for sublist in all_objects for item in sublist]
+
 
     catalog_objects_returned = client.catalog.batch_retrieve_catalog_objects(
         body = {
@@ -204,9 +216,10 @@ def get_catalog_objects_from_ids(client, catalog_object_id_array):
     if catalog_objects_returned.is_error():
         print("An error occurred")
         for error in catalog_objects_returned.errors:
-            print(error['category'])
-            print(error['code'])
-            print(error['detail'])
+            print(json.dumps(error, indent=4))
+            # print(error['category'])
+            # print(error['code'])
+            # print(error['detail'])
         exit
 
     if not catalog_objects_returned.is_success:
@@ -220,10 +233,28 @@ def get_inventory_counts(client, catalog_object_id_array):
             "catalog_object_ids": catalog_object_id_array
         }
     )
+    # attempting to fix the too many items error
+    if len(catalog_object_id_array) > 1000:
+        coi_chunks = []
+        for i in range(0, len(catalog_object_id_array), 1000):
+            coi_chunks.append(catalog_object_id_array[i:i+1000])
+        print(f"Many objects...splitting into {len(coi_chunks)} sections")
+        all_objects = []
+        #print(coi_chunks)
+        for chunk in coi_chunks:
+            all_objects.append(get_inventory_counts(client, chunk))
+        return [item for sublist in all_objects for item in sublist]
     if not result.is_success():
+        print("An error occurred getting the inventory counts")
+        print(result)
         return []
     
     return [inventory_count for inventory_count in result.body["counts"]] 
+def get_category_object_from_id(client, category_object_id):
+    if category_object_id == "":
+        return "No Category"
+    return get_catalog_objects_from_ids(client, [category_object_id])[0]
+    
 
 def get_square_products(client, open_time, close_time):
     print("Getting inventory changes...")
@@ -292,7 +323,8 @@ def get_square_products(client, open_time, close_time):
         # if it hasn't been processed, look for it 
         if category_id not in processed_categories.keys():
             try:
-                square_product.category_object = get_catalog_objects_from_ids(client, [category_id])[0]
+                #square_product.category_object = get_catalog_objects_from_ids(client, [category_id])[0]
+                square_product.category_object = get_category_object_from_id(client, category_id)
                 processed_categories[category_id] = square_product.category_object
             except IndexError:
                 square_product.category_object = {}
