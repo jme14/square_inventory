@@ -56,6 +56,7 @@ def category_needs_restock(category_id):
         # BOTTLED_ALCOHOL,
         # BOTTLED_NON_ALCOHOLIC,
         GRAB_AND_GO,
+        WARGAMING,
         GAMES
     ]
     if category_id in needs_restock:
@@ -362,6 +363,7 @@ if __name__ == "__main__":
     # gets all products that have had inventory changes between opening on open_time and closing on closing_time 
     products = get_square_products(client, open_time, close_time)
 
+    [print(json.dumps(product.catalog_object, indent=4)) for product in products]
     # filtering out the items labeled as games 
     game_products = [product for product in products if category_needs_restock(product.get_category_id()) and product.is_to_sold()]
 
