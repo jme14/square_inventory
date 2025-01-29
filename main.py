@@ -309,7 +309,7 @@ def get_square_products(client, open_time, close_time):
     # match inventory counts with square object records 
     for inventory_count in inventory_counts :
         for square_product in square_products:
-            if inventory_count["catalog_object_id"] == square_product.catalog_object_id:
+            if (inventory_count["catalog_object_id"] == square_product.catalog_object_id) and (inventory_count["state"] != "RETURNED_BY_CUSTOMER"):
                 square_product.inventory_count = inventory_count 
 
 
