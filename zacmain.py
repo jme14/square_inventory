@@ -1,3 +1,10 @@
+from square.http.auth.o_auth_2 import BearerAuthCredentials
+from square.client import Client
+from datetime import datetime, timedelta
+import os
+import json
+
+
 GAMES="PEDVXQTFWX7G3RRW234W4X3A"
 ROLE_PLAYING_GAMES="VESLZYNK6DWJEFYQI3VI7DXK"
 DICE="VRIPWLSL2TKXZODDA2DDETEU"
@@ -37,6 +44,82 @@ TWO_PLAYER="NIEK67P4YZZRHGK5OWP22XPM"
 UPCOMING_EVENTS="BLOWEEZJ5WISQGSVRLQEJCPM"
 
 BOTTLE_RESTOCK_ATTRIBUTE_ID = "00bda8e9-974c-4d3c-83f4-1a30264a3f30"
+def get_client():
+    return Client(
+    bearer_auth_credentials=BearerAuthCredentials(
+        access_token=os.environ['SQUARE_ACCESS_TOKEN']
+    ),
+    environment='production')
+
+def get_catalog_objects_from_ids(client, catalog_object_id_array):
+
+    for coi in catalog_object_id_array:
+        
+        if not isinstance(coi, str):
+            print("THIS ONE:")
+            print(coi)
+    # attempting to fix the too many items error
+    if len(catalog_object_id_array) > 1000:
+        coi_chunks = []
+        for i in range(0, len(catalog_object_id_array), 1000):
+            coi_chunks.append(catalog_object_id_array[i:i+1000])
+        print(f"Many objects...splitting into {len(coi_chunks)} sections")
+        all_objects = []
+        #print(coi_chunks)
+        for chunk in coi_chunks:
+            all_objects.append(get_catalog_objects_from_ids(client, chunk))
+        return [item for sublist in all_objects for item in sublist]
+
+
+    catalog_objects_returned = client.catalog.batch_retrieve_catalog_objects(
+        body = {
+            "object_ids": catalog_object_id_array
+        }
+    )
+
+    if catalog_objects_returned.is_error():
+        print("An error occurred")
+        for error in catalog_objects_returned.errors:
+            print(json.dumps(error, indent=4))
+            # print(error['category'])
+            # print(error['code'])
+            # print(error['detail'])
+        exit
+
+    if not catalog_objects_returned.is_success:
+        return []
+
+    return [catalog_object for catalog_object in catalog_objects_returned.body.get("objects", [])] 
+
+def get_category_object_from_id(client, category_object_id):
+    if category_object_id == "":
+        return "No Category"
+    return get_catalog_objects_from_ids(client, [category_object_id])[0]
+
+def get_inventory_counts(client, catalog_object_id_array):
+    result = client.inventory.batch_retrieve_inventory_counts(
+        body = {
+            "catalog_object_ids": catalog_object_id_array
+        }
+    )
+    # attempting to fix the too many items error
+    if len(catalog_object_id_array) > 1000:
+        coi_chunks = []
+        for i in range(0, len(catalog_object_id_array), 1000):
+            coi_chunks.append(catalog_object_id_array[i:i+1000])
+        print(f"Many objects...splitting into {len(coi_chunks)} sections")
+        all_objects = []
+        #print(coi_chunks)
+        for chunk in coi_chunks:
+            all_objects.append(get_inventory_counts(client, chunk))
+        return [item for sublist in all_objects for item in sublist]
+    if not result.is_success():
+        print("An error occurred getting the inventory counts")
+        print(result)
+        return []
+    
+    return [inventory_count for inventory_count in result.body["counts"]] 
+
 class ZacProduct:
     def __init__(self, catalog_object_id):
         self.catalog_object_id = catalog_object_id
@@ -67,7 +150,7 @@ class ZacProduct:
 
 
 def get_zac_objects():
-
+    client = get_client()
     result = client.catalog.search_catalog_items(
         body = {
             "custom_attribute_filters": [{
