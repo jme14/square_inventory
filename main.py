@@ -128,6 +128,8 @@ class SquareProduct:
         try:
             return self.catalog_object["item_variation_data"]["item_id"]
         except KeyError:
+            print("ERROR WITH THIS ITEM...was it deleted?")
+            print(self.get_detailed_string())
             return "" 
     
     # true on adjustment was from something to sold 
@@ -185,7 +187,9 @@ def get_inventory_changes(client, open_time, close_time):
                 "cursor": result.cursor
             }
         )
-        [all_results.append(change) for change in result.body["changes"]]
+        if (result.body == {}):
+            break
+        [all_results.append(change) for change in result.body["changes"] if result.body["changes"]]
 
     return all_results
 def get_catalog_objects_from_ids(client, catalog_object_id_array):
