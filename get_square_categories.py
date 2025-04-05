@@ -51,7 +51,8 @@ def write_category_info(category_ids):
             name = result.body["object"]["category_data"]["name"]
             file.write(f"{name.upper().replace(" ", "_")}=\"{category_id}\"\n")
 
-def get_category_dictionary():
+def get_category_dictionary(client):
+    print("Getting category dictionary...")
     category_dict = {}
 
     category_ids = get_all_category_ids()
@@ -72,5 +73,6 @@ def write_category_ids_file():
 
     
 if __name__ == "__main__":
-    cat_dict = get_category_dictionary()
+    client = get_client()
+    cat_dict = get_category_dictionary(client)
     print(cat_dict)
