@@ -6,60 +6,17 @@ import json
 
 import requests
 
-GAMES="PEDVXQTFWX7G3RRW234W4X3A"
-ROLE_PLAYING_GAMES="VESLZYNK6DWJEFYQI3VI7DXK"
-DICE="VRIPWLSL2TKXZODDA2DDETEU"
-PUZZLES="RB6VYRDFJGYX3IBUO45BVBG5"
-GAMING_ACCESSORIES="HWQCO5EPF7BTFFZ37G3OTYQT"
-MAGIC_THE_GATHERING="GXR4JX6T7NK46PPYRPDNTWIR"
-MINIATURES_AND_MINIS_SYSTEMS="SCOOKY7NXKKI3RHBANORZOVL"
-POKEMON_TCG="TQQOIPFQEAP7B2JPFE5E55VP"
-CAFÉ_DRINKS="PHSJ75IXSQXRFFFFHYACF2RZ"
-EVENTS="WX7WOX2G4BQITYCVOTQ4MK5O"
-COLLECTIBLE_CARD_GAMES="6MMNL6N7EOQAUCL2G6SC5DVG"
-LIVING_CARD_GAMES="FWWG3AFAQ6SROH4Q4G6UEZCS"
-SANDWICHES="XPMITEVRWOCBIP46P63M2CKE"
-BAR_DRINKS="SECK7XGHAN6VQ3546FWSJCKA"
-BOTTLED_ALCOHOL="TGS6DM5SAYOILURCG23VZWWK"
-DRAFT_BEER_OR_CIDER="IHW7OWGZMFMFEIL2IZQQEMOL"
-MEMBERSHIP="R6YZHB2Z3QPGTIJ2ULRQV3ZY"
-WARGAMING="6KCDOOCNODYZ7Z7Q4YGP5HAP"
-MERCH="ILOVTBNVQNEO4LNSJH33HGJN"
-LORCANA="PTGOQ2THYORJF4LWDHTMT6CM"
-GAME_PASS="QI6UVNBDTVBRBWGNYZSUGRJE"
-POP_UP="VRYBKMQDEULGHOHAOQYHITEL"
-SHAREABLES="4RZQYJABRHVKQ2QDO3RITLC4"
-SIDES="4FNIMGSJOO7HLWQX5CHHWR77"
-SPOOKEASY="IOIVVBUYAEAE4XXJW5VRIQCR"
-WINTER_WONDERLAND="ZVAXHPK7WWASGKYFG43LWMP6"
-BOTTLED_NON_ALCOHOLIC="QLU7YKXIGEXUB7TJ57IGVAGV"
-SCHOOL_SPECIALS="PEAXJ62E37P6PQXR3STWL3AY"
-LEGOS="3MT4C7XNIQR2UUNJHFAG3JMX"
-YOUTH_PROGRAMMING="JH7576HVYVBDJOEVDG5QQCZJ"
-GRAB_AND_GO="S46JPFKM6TLPLQSHSDO27EHB"
-MIDWEST_PARADISE="TZ2EOASB2MWPQLJTEVREMOS7"
-CLASSICS_KIDS="5BWHDTREMYUWBBQ6QQBCCJZI"
-BEST_SELLERS="OQEHF5KPP437ZEJJUGXOI2KQ"
-GATEWAY_GAMES="V77CTMNEZXZJZ2V6TAIXEK2V"
-TWO_PLAYER="NIEK67P4YZZRHGK5OWP22XPM"
-UPCOMING_EVENTS="BLOWEEZJ5WISQGSVRLQEJCPM"
+from get_square_categories import get_category_dictionary
 
-def category_needs_restock(category_id):
-    needs_restock = [
-        ROLE_PLAYING_GAMES,
-        DICE,
-        PUZZLES,
-        GAMING_ACCESSORIES,
-        MINIATURES_AND_MINIS_SYSTEMS,
-        POKEMON_TCG,
-        LIVING_CARD_GAMES,
-        # BOTTLED_ALCOHOL,
-        # BOTTLED_NON_ALCOHOLIC,
-        GRAB_AND_GO,
-        WARGAMING,
-        GAMES
-    ]
-    if category_id in needs_restock:
+
+def category_needs_restock(category_dict, category_id):
+
+    restock_categories = []
+    with open("restock_categories.txt", "r") as restock_categories_file:
+        keys = [line.rstrip().replace(" ", "_").upper() for line in restock_categories_file]
+        restock_categories = [category_dict[catkey] for catkey in keys]
+
+    if category_id in restock_categories:
         return True
     return False
 
@@ -355,6 +312,8 @@ if __name__ == "__main__":
     # accessing the square API requires calling this function
     client = get_client()
 
+    category_dictionary = get_category_dictionary(client)
+
     open_date, close_date = get_dates_from_date_file() 
 
     if not open_date or not close_date:
@@ -369,7 +328,7 @@ if __name__ == "__main__":
 
     # [print(json.dumps(product.catalog_object, indent=4)) for product in products]
     # filtering out the items labeled as games 
-    game_products = [product for product in products if category_needs_restock(product.get_category_id()) and product.is_to_sold()]
+    game_products = [product for product in products if category_needs_restock(category_dictionary, product.get_category_id()) and product.is_to_sold()]
 
     inventory_strings = [str(game_product) for game_product in game_products]
     unique_inventory_strings = list(set(inventory_strings))
