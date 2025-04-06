@@ -1,12 +1,7 @@
-from square.http.auth.o_auth_2 import BearerAuthCredentials
-from square.client import Client
 from datetime import datetime, timedelta
-import os
 import json
-
-import requests
-
 from get_square_categories import get_category_dictionary
+from get_client import get_client
 
 
 def category_needs_restock(category_dict, category_id):
@@ -93,15 +88,6 @@ class SquareProduct:
     def is_to_sold(self):
         return self.inventory_adjustment["adjustment"]["to_state"] == "SOLD"
 
-
-
-
-def get_client():
-    return Client(
-    bearer_auth_credentials=BearerAuthCredentials(
-        access_token=os.environ['SQUARE_ACCESS_TOKEN']
-    ),
-    environment='production')
 
 def get_square_time(year, month, date, hour, minute):
     return (datetime(year, month, date, hour, minute, 0, 0)+timedelta(hours=7))

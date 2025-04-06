@@ -1,16 +1,4 @@
-from square.http.auth.o_auth_2 import BearerAuthCredentials
-from square.client import Client
-from datetime import datetime, timedelta
-import os
-import json
-
-def get_client():
-    return Client(
-    bearer_auth_credentials=BearerAuthCredentials(
-        access_token=os.environ['SQUARE_ACCESS_TOKEN']
-    ),
-    environment='production')
-
+from get_client import get_client
 
 def get_all_category_ids():
     client = get_client()
