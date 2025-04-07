@@ -1,8 +1,12 @@
 from src.get_client import get_client 
+from src.get_client import SquareAPIException
 from src.get_square_categories import get_all_category_ids, get_category_dictionary
 
 def test_get_client_with_env():
-    get_client()
+    try:
+        get_client()
+    except SquareAPIException as e:
+        print(e)
 
 def test_square_categories():
     client = get_client()

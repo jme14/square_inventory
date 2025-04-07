@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 import json
 from src.get_square_categories import get_category_dictionary
 from src.get_client import get_client
+from src.get_client import SquareAPIException
 
 
 def category_needs_restock(category_dict, category_id):
@@ -295,8 +296,13 @@ def get_dates_from_date_file():
 
 if __name__ == "__main__":
 
-    # accessing the square API requires calling this function
-    client = get_client()
+    try:
+        # accessing the square API requires calling this function
+        client = get_client()
+    except SquareAPIException as e:
+        print(e)
+        print("Failure to connect to square, is your API Token correct?")
+        exit(0)
 
     category_dictionary = get_category_dictionary(client)
 
