@@ -54,11 +54,12 @@ if __name__ == "__main__":
     unique_inventory_strings = list(set(inventory_strings))
     unique_inventory_strings.sort()
 
-    pretty_open_date = open_date.strftime("%Y-%m-%d")
-    pretty_close_date = close_date.strftime("%Y-%m-%d")
+    dateformat = "%b%d"
+    pretty_open_date = open_date.strftime(dateformat)
+    pretty_close_date = close_date.strftime(dateformat)
 
     try:
-        with open(f"prior_records/{pretty_open_date}{pretty_close_date}.csv", "w") as file:
+        with open(f"prior_records/{pretty_open_date}-{pretty_close_date}.csv", "w") as file:
             file.write("Category,Title,Variation,Floor,Backstock,Square,Notes,Done?\n")
             [file.write(f"{uis}\n") for uis in unique_inventory_strings]
     except PermissionError:
