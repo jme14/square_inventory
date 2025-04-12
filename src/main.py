@@ -64,7 +64,7 @@ if __name__ == "__main__":
     except PermissionError:
         print("Permission Error")
         print("This is likely due to the file already being open.") 
-        print("make sure to close the spreadsheet before running again.")
+        print("Make sure to close the spreadsheet before running again.")
 
 
 
