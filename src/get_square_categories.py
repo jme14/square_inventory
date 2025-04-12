@@ -1,4 +1,5 @@
 from src.get_client import get_client
+from src.get_square_products import get_catalog_objects_from_ids
 
 def get_all_category_ids(client):
     category_ids = []
@@ -34,10 +35,10 @@ def get_category_dictionary(client):
     category_dict = {}
 
     category_ids = get_all_category_ids(client)
-    for category_id in category_ids:
-        result = client.catalog.retrieve_catalog_object(object_id=category_id)
-        # unformatted name 
-        uf_name = result.body["object"]["category_data"]["name"]
+    category_catalog_objects  = get_catalog_objects_from_ids(client, category_ids)
+    both = zip(category_ids, category_catalog_objects)
+    for category_id, category_catalog_object in both:
+        uf_name = category_catalog_object["category_data"]["name"]
         name = uf_name.upper().replace(" ", "_")
         category_dict[name] = category_id
     return category_dict
