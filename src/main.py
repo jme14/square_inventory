@@ -57,9 +57,14 @@ if __name__ == "__main__":
     pretty_open_date = open_date.strftime("%Y-%m-%d")
     pretty_close_date = close_date.strftime("%Y-%m-%d")
 
-    with open(f"prior_records/{pretty_open_date}{pretty_close_date}.csv", "w") as file:
-        file.write("Category,Title,Variation,Floor,Backstock,Square,Notes,Done?\n")
-        [file.write(f"{uis}\n") for uis in unique_inventory_strings]
+    try:
+        with open(f"prior_records/{pretty_open_date}{pretty_close_date}.csv", "w") as file:
+            file.write("Category,Title,Variation,Floor,Backstock,Square,Notes,Done?\n")
+            [file.write(f"{uis}\n") for uis in unique_inventory_strings]
+    except PermissionError:
+        print("Permission Error")
+        print("This is likely due to the file already being open.") 
+        print("make sure to close the spreadsheet before running again.")
 
 
 
