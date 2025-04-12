@@ -190,7 +190,7 @@ def get_category_object_from_id(client, category_object_id):
         return "No Category"
     return get_catalog_objects_from_ids(client, [category_object_id])[0]
     
-def get_square_products(client, open_time, close_time):
+def get_square_products_from_inventory_changes(client, open_time, close_time):
     print("Getting inventory changes...")
     # only getting the square products that have been purchased within this timeframe  
     inventory_changes = get_inventory_changes(client, open_time, close_time) 

@@ -4,7 +4,7 @@ from src.get_client import SquareAPIException
 
 # my modules 
 from src.square_dates import get_dates_from_date_file, get_open_close_time
-from src.get_square_products import get_square_products
+from src.get_square_products import get_square_products_from_inventory_changes
 
 """
 CATEGORY FILE READING 
@@ -42,7 +42,7 @@ if __name__ == "__main__":
     open_time, close_time = get_open_close_time(open_date, close_date)
 
     # gets all products that have had inventory changes between opening on open_time and closing on closing_time 
-    products = get_square_products(client, open_time, close_time)
+    products = get_square_products_from_inventory_changes(client, open_time, close_time)
 
     category_dictionary = get_category_dictionary(client)
     restock_categories = get_category_restock_keys(category_dictionary)
